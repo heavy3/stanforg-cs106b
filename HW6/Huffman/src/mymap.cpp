@@ -1,34 +1,107 @@
 #include "mymap.h"
 #include "vector.h"
+#include "hashmap.h"
+
 using namespace std;
 
-MyMap::MyMap() {
+const int INITIAL_HASH_SIZE = 16;
 
+MyMap::MyMap(): MyMap(INITIAL_HASH_SIZE) {
+}
+
+MyMap::MyMap(int initSize) {
+    nBuckets = initSize;
+    buckets = createBucketArray(nBuckets);
+    nElems = 0;
 }
 
 MyMap::~MyMap() {
+    for (int i = 0; i < nBuckets; i++) {
+        MyMap::key_val_pair* bucket = buckets[i];
+        while (bucket != nullptr) {
+            key_val_pair* temp = bucket;
+            bucket = bucket->next;
+            delete temp;
+        }
+    }
+}
+MyMap::key_val_pair::key_val_pair(int key, int value, key_val_pair* next): key(key), value(value), next(next) {
 
 }
 
 void MyMap::put(int key, int value) {
-  return;
+    // double the table size if average length of link list is > 10
+    if (nElems >= nBuckets * 10) resize(2 * nBuckets);
+
+    // find the proper hash key
+    int hash = hashFunction(key) % nBuckets;
+
+    // find proper place to insert new pair
+    for (key_val_pair* bucket = buckets[hash]; bucket != nullptr; bucket = bucket->next) {
+        if (bucket->key == key) {
+            bucket->value = value;
+            return;
+        }
+    }
+    buckets[hash] = new MyMap::key_val_pair(key, value, buckets[hash]);
+    // increase
+    nElems++;
 }
 
 int MyMap::get(int key) const {
-  return 1;
+
+    // find position for key
+    int hash = hashFunction(key) % nBuckets;
+    MyMap::key_val_pair* bucket = buckets[hash];
+    for (key_val_pair* bucket = buckets[hash]; bucket != nullptr; bucket = bucket->next) {
+        if (bucket->key == key) {
+            return bucket -> value;
+        }
+    }
+
+    throw std::string("Invalid key");
 }
 
 bool MyMap::containsKey(int key) {
-  return false;
+    // find position for key
+    int hash = hashFunction(key) % nBuckets;
+    for (key_val_pair* bucket = buckets[hash]; bucket != nullptr; bucket = bucket->next) {
+        if (bucket->key == key) {
+            return true;
+        }
+    }
+    return false;
 }
 
 Vector<int> MyMap::keys() const {
      Vector<int> keys;
+
+     for (int i = 0; i < nBuckets; i++) {
+         MyMap::key_val_pair* bucket = buckets[i];
+         while (bucket != nullptr) {
+             keys.add(bucket->key);
+             bucket = bucket->next;
+         }
+     }
+
+     sort(keys.begin(), keys.end());
      return keys;
 }
 
 int MyMap::size() {
     return nElems;
+}
+
+void MyMap::resize(int newSize) {
+    MyMap* temp = new MyMap(newSize);
+    Vector<int> currentKeys = keys();
+    for (int key: currentKeys) {
+        temp->put(key, get(key));
+    }
+
+    this->nBuckets = temp->nBuckets;
+    this->nElems = temp->nElems;
+    this->buckets = temp->buckets;
 }
 
 /**
@@ -179,6 +252,8 @@ void MyMap::sanityCheck(){
   for(int i = 0; i < 1000; i++) {
       put(i,i);
   }
+
+  cout << this << endl;
   for(int i = 0; i < 1000; i++) {
 
       if(!containsKey(i)) {

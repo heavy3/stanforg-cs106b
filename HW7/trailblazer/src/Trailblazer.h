@@ -37,6 +37,7 @@ Path breadthFirstSearch(const RoadGraph& graph, RoadNode* start, RoadNode* end);
 Path dijkstrasAlgorithm(const RoadGraph& graph, RoadNode* start, RoadNode* end);
 Path aStar(const RoadGraph& graph, RoadNode* start, RoadNode* end);
 Path alternativeRoute(const RoadGraph& graph, RoadNode* start, RoadNode* end);
+Path aStarExclude(const RoadGraph& graph, RoadNode* start, RoadNode* end, RoadEdge* exclude = nullptr);
 
 #endif
 

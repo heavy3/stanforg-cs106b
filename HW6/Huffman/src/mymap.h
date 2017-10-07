@@ -10,6 +10,7 @@ class MyMap
 {
 public:
     MyMap();
+    MyMap(int initSize);
     ~MyMap();
 
     int get(int key) const;
@@ -30,6 +31,8 @@ private:
         int key;
         int value;
         key_val_pair* next;
+
+        key_val_pair(int key, int value, key_val_pair* next);
     };
 
     typedef key_val_pair** bucketArray; //
@@ -45,5 +48,5 @@ private:
     // END OF STARTER CODE
     // Insert your methods and variables below this line
     // if you need them (you may not need any other methods or variables)
-
+    void resize(int newSize);
 };
